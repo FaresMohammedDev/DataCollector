@@ -2,10 +2,10 @@
 const SUPABASE_URL = 'https://uwglehahxjgbrvfvhvox.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_EYOeMFLjxNawT7qX--ztIA_FQTNcslO';
 
-let supabase;
+let db;
 
 try {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 } catch (e) {
     console.warn("Please add your Supabase URL and Key.");
 }
@@ -52,7 +52,7 @@ studentForm.addEventListener('submit', async (e) => {
     submitBtn.classList.add('opacity-75');
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from('students')
             .insert([{ name: nameVal, whatsapp }]);
 
@@ -107,7 +107,7 @@ async function loadStudents() {
     loadingSpinner.classList.remove('hidden');
 
     try {
-        const { data: students, error } = await supabase
+        const { data: students, error } = await db
             .from('students')
             .select('*')
             .order('created_at', { ascending: false });
@@ -185,7 +185,7 @@ function renderStudents(studentsToRender) {
 window.toggleCheck = async (id, currentState) => {
     loadingSpinner.classList.remove('hidden');
     try {
-        const { error } = await supabase
+        const { error } = await db
             .from('students')
             .update({ is_checked: !currentState })
             .eq('id', id);
