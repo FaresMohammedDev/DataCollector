@@ -35,26 +35,39 @@ studentForm.addEventListener('submit', async (e) => {
     const nameVal = document.getElementById('student-name').value.trim();
     const whatsapp = document.getElementById('whatsapp-number').value.trim();
 
-    // 🚀 الفكرة الجديدة: فتح قائمة الطلاب إذا تم إدخال اسم ورقم معين (غير حساس لحالة الأحرف)
-    if (nameVal.toLowerCase() === 'iam-fares' && whatsapp === '121212') {
-        // تفريغ الحقول وإخفاء الفورم وفتح القائمة السري
-        studentForm.reset();
-        formMessage.classList.add('hidden');
-        formSection.classList.add('hidden');
-        listSection.classList.remove('hidden');
-        loadStudents();
-        return; // إيقاف العملية هنا لعدم حفظ هذا الإدخال في الداتا بيز
-    }
+        // 🚀 الفكرة الجديدة: فتح قائمة الطلاب إذا تم إدخال اسم ورقم معين (غير حساس لحالة الأحرف)
+        if (nameVal.toLowerCase() === 'iam-fares' && whatsapp === '121212') {
+            // تفريغ الحقول وإخفاء الفورم وفتح القائمة السري
+            studentForm.reset();
+            formMessage.classList.add('hidden');
+            formSection.classList.add('hidden');
+            listSection.classList.remove('hidden');
+            loadStudents();
+            return; // إيقاف العملية هنا لعدم حفظ هذا الإدخال في الداتا بيز
+        }
 
-    // التنفيذ الطبيعي لحفظ الطالب إذا لم يكن الباسورد السري
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin ml-2"></i> جاري الحفظ...';
-    submitBtn.classList.add('opacity-75');
+        // ============ إضافة مفتاح الدولة تلقائياً ============
+        let formattedPhone = whatsapp.replace(/[^\d+]/g, '');
+        if (formattedPhone.startsWith('0020')) {
+            formattedPhone = '+' + formattedPhone.substring(2);
+        } else if (formattedPhone.startsWith('0')) {
+            formattedPhone = '+20' + formattedPhone.substring(1);
+        } else if (!formattedPhone.startsWith('+20') && !formattedPhone.startsWith('20')) {
+            formattedPhone = '+20' + formattedPhone;
+        } else if (formattedPhone.startsWith('20')) {
+            formattedPhone = '+' + formattedPhone;
+        }
+        // =====================================================
 
-    try {
-        const { data, error } = await db
-            .from('students')
-            .insert([{ name: nameVal, whatsapp }]);
+        // التنفيذ الطبيعي لحفظ الطالب إذا لم يكن الباسورد السري
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin ml-2"></i> جاري الحفظ...';
+        submitBtn.classList.add('opacity-75');
+
+        try {
+            const { data, error } = await db
+                .from('students')
+                .insert([{ name: nameVal, whatsapp: formattedPhone }]);
 
         if (error) throw error;
 
@@ -144,7 +157,10 @@ function renderStudents(studentsToRender) {
         const dateOptions = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
         const date = new Date(student.created_at).toLocaleDateString('ar-EG', dateOptions);
         
-        let cleanNumber = student.whatsapp.replace(/[^\d+]/g, '');
+        let cleanNumber = student.whatsapp.replace(/[^\d]/g, '');
+        if (cleanNumber.startsWith('0020')) cleanNumber = cleanNumber.substring(2);
+        else if (cleanNumber.startsWith('0')) cleanNumber = cleanNumber.substring(1);
+        if (!cleanNumber.startsWith('20')) cleanNumber = '20' + cleanNumber;
 
         const textStyle = student.is_checked ? 'line-through text-gray-500' : 'text-gray-200 font-medium';
         const checkBtnClass = student.is_checked 
