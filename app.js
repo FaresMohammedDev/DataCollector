@@ -32,11 +32,11 @@ let allStudents = [];
 studentForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const name = document.getElementById('student-name').value.trim();
+    const nameVal = document.getElementById('student-name').value.trim();
     const whatsapp = document.getElementById('whatsapp-number').value.trim();
 
-    // 🚀 الفكرة الجديدة: فتح قائمة الطلاب إذا تم إدخال اسم ورقم معين
-    if (name === 'Iam-Fares' && whatsapp === '121212') {
+    // 🚀 الفكرة الجديدة: فتح قائمة الطلاب إذا تم إدخال اسم ورقم معين (غير حساس لحالة الأحرف)
+    if (nameVal.toLowerCase() === 'iam-fares' && whatsapp === '121212') {
         // تفريغ الحقول وإخفاء الفورم وفتح القائمة السري
         studentForm.reset();
         formMessage.classList.add('hidden');
@@ -54,7 +54,7 @@ studentForm.addEventListener('submit', async (e) => {
     try {
         const { data, error } = await supabase
             .from('students')
-            .insert([{ name, whatsapp }]);
+            .insert([{ name: nameVal, whatsapp }]);
 
         if (error) throw error;
 
