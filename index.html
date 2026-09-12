@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>جمع بيانات الطلاب</title>
+    <title>تسجيل طالب جديد</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- SheetJS (for Excel export) -->
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Google Fonts -->
@@ -17,12 +15,9 @@
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
         body { 
             font-family: 'Tajawal', sans-serif; 
-            background-color: #0b1120; /* لون الخلفية الداكن */
+            background-color: #0b1120; 
             color: #e2e8f0; 
         }
-        .hidden { display: none !important; }
-        
-        /* تصميم حقول الإدخال لتطابق الصورة */
         .dark-input {
             background-color: #050810;
             border: 1px solid #1e293b;
@@ -32,130 +27,34 @@
             border-color: #3b82f6;
             outline: none;
         }
-        
-        /* تصميم الحاويات الأساسية */
         .glass-panel {
             background-color: #151c2c;
             border: 1px solid #1e293b;
         }
+        .hidden { display: none !important; }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-8">
-    <div class="max-w-5xl mx-auto">
-        
-        <!-- Header / Navigation -->
-        <div class="glass-panel rounded-xl shadow-sm p-4 mb-8 flex justify-between items-center flex-wrap gap-4">
-            <h1 class="text-xl md:text-2xl font-bold text-white"><i class="fas fa-user-graduate ml-2 text-blue-500"></i>نظام تسجيل الطلاب</h1>
-            <div class="flex gap-2">
-                <button id="btn-show-form" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition hover:bg-blue-700 shadow-[0_0_10px_rgba(37,99,235,0.3)]">إضافة طالب</button>
-                <button id="btn-show-list" class="bg-[#1e293b] text-gray-300 px-4 py-2 rounded-lg font-medium transition hover:bg-[#2a364a]">عرض القائمة</button>
+<body class="min-h-screen flex items-center justify-center p-4">
+    
+    <!-- Form Section Only -->
+    <div class="glass-panel rounded-2xl p-6 md:p-10 w-full max-w-xl shadow-lg transition-all">
+        <h2 class="text-2xl font-bold mb-8 text-white text-right">تسجيل طالب جديد</h2>
+        <form id="student-form" class="space-y-5">
+            <div>
+                <input type="text" id="student-name" required class="w-full px-4 py-3.5 dark-input rounded-lg transition text-right placeholder-gray-500" placeholder="الاسم *">
             </div>
-        </div>
-
-        <!-- Form Section -->
-        <div id="form-section" class="glass-panel rounded-2xl p-6 md:p-10 max-w-xl mx-auto mt-12 transition-all">
-            <h2 class="text-2xl font-bold mb-8 text-white text-right">تسجيل طالب جديد</h2>
-            <form id="student-form" class="space-y-5">
-                <div>
-                    <input type="text" id="student-name" required class="w-full px-4 py-3.5 dark-input rounded-lg transition text-right placeholder-gray-500" placeholder="الاسم *">
-                </div>
-                <div>
-                    <input type="tel" id="whatsapp-number" required class="w-full px-4 py-3.5 dark-input rounded-lg transition text-right placeholder-gray-500" placeholder="رقم الواتساب *">
-                    <p class="text-xs text-gray-500 mt-2 text-right">يفضل كتابة كود الدولة قبل الرقم مثل +20</p>
-                </div>
-                
-                <div class="flex justify-end gap-3 mt-8 pt-4">
-                    <button type="submit" id="submit-btn" class="bg-blue-500 text-white font-bold py-2.5 px-8 rounded-lg hover:bg-blue-600 transition shadow-[0_0_15px_rgba(59,130,246,0.4)]">
-                        حفظ الطالب
-                    </button>
-                    <button type="button" id="btn-cancel-form" class="bg-[#2a3241] text-gray-300 font-medium py-2.5 px-6 rounded-lg hover:bg-[#374151] transition">
-                        إلغاء
-                    </button>
-                </div>
-                <div id="form-message" class="text-center text-sm font-medium mt-4 hidden rounded-lg py-2"></div>
-            </form>
-        </div>
-
-        <!-- Password Modal -->
-        <div id="password-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4 backdrop-blur-sm transition-all">
-            <div class="glass-panel rounded-xl shadow-2xl p-6 w-full max-w-sm transform scale-100">
-                <div class="text-center mb-6">
-                    <div class="bg-[#1e293b] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <i class="fas fa-lock text-2xl text-gray-400"></i>
-                    </div>
-                    <h3 class="text-lg font-bold text-white">منطقة محمية</h3>
-                    <p class="text-sm text-gray-400 mt-1">يرجى إدخال كلمة المرور لعرض القائمة</p>
-                </div>
-                <input type="password" id="admin-password" class="w-full px-4 py-3 dark-input rounded-lg mb-6 text-center tracking-widest text-lg" placeholder="••••••">
-                <div class="flex gap-2">
-                    <button id="btn-verify-password" class="flex-1 bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition shadow-md">دخول</button>
-                    <button id="btn-cancel-password" class="flex-1 bg-[#2a3241] text-gray-300 font-bold py-2.5 rounded-lg hover:bg-[#374151] transition">إلغاء</button>
-                </div>
-                <p id="password-error" class="text-red-400 text-sm text-center mt-4 hidden bg-red-900 bg-opacity-20 py-2 rounded-lg font-medium border border-red-800">كلمة المرور غير صحيحة!</p>
-            </div>
-        </div>
-
-        <!-- List Section -->
-        <div id="list-section" class="hidden glass-panel rounded-2xl shadow-lg p-6 md:p-8 mt-6">
-            <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
-                <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                    <i class="fas fa-list-ul text-blue-500"></i> قائمة الطلاب المسجلين
-                </h2>
-                <button id="btn-refresh" class="text-gray-300 bg-[#1e293b] hover:bg-[#2a364a] px-4 py-2 rounded-lg transition text-sm font-medium shadow-sm flex items-center gap-2 border border-[#1e293b]">
-                    <i class="fas fa-sync-alt"></i> تحديث القائمة
-                </button>
-            </div>
-
-            <!-- Filters and Tools Bar -->
-            <div class="flex flex-wrap gap-4 mb-6 bg-[#0b1120] p-4 rounded-xl border border-[#1e293b] items-center">
-                <!-- Search -->
-                <div class="flex-1 min-w-[200px] relative">
-                    <i class="fas fa-search absolute right-3 top-3.5 text-gray-500"></i>
-                    <input type="text" id="search-input" placeholder="ابحث باسم الطالب..." class="w-full pr-10 pl-4 py-2.5 dark-input rounded-lg transition">
-                </div>
-                
-                <!-- Filter Dropdown -->
-                <div class="w-full sm:w-auto">
-                    <select id="filter-select" class="w-full px-4 py-2.5 dark-input rounded-lg cursor-pointer">
-                        <option value="all">الكل</option>
-                        <option value="checked">تم الإنجاز فقط ✔️</option>
-                        <option value="unchecked">لم يتم الإنجاز فقط ❌</option>
-                    </select>
-                </div>
-
-                <!-- Export Button -->
-                <div class="w-full sm:w-auto">
-                    <button id="btn-export-excel" class="w-full bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-medium transition flex items-center justify-center gap-2 shadow-sm">
-                        <i class="fas fa-file-excel"></i> تصدير إكسيل
-                    </button>
-                </div>
+            <div>
+                <input type="tel" id="whatsapp-number" required class="w-full px-4 py-3.5 dark-input rounded-lg transition text-right placeholder-gray-500" placeholder="رقم الواتساب *">
+                <p class="text-xs text-gray-500 mt-2 text-right">يفضل كتابة كود الدولة قبل الرقم مثل +20</p>
             </div>
             
-            <div class="overflow-x-auto rounded-xl border border-[#1e293b]">
-                <table class="w-full text-right border-collapse">
-                    <thead>
-                        <tr class="bg-[#0b1120] border-b border-[#1e293b]">
-                            <th class="p-4 font-semibold text-gray-400">الاسم</th>
-                            <th class="p-4 font-semibold text-gray-400">رقم الواتساب</th>
-                            <th class="p-4 font-semibold text-gray-400">تاريخ التسجيل</th>
-                            <th class="p-4 font-semibold text-gray-400 text-center">الإجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody id="students-table-body" class="divide-y divide-[#1e293b]">
-                        <!-- Rows will be injected here -->
-                    </tbody>
-                </table>
+            <div class="flex justify-end mt-8 pt-4">
+                <button type="submit" id="submit-btn" class="w-full sm:w-auto bg-blue-500 text-white font-bold py-3 px-10 rounded-lg hover:bg-blue-600 transition shadow-[0_0_15px_rgba(59,130,246,0.4)]">
+                    حفظ الطالب
+                </button>
             </div>
-            <div id="loading-spinner" class="text-center py-12 hidden">
-                <i class="fas fa-circle-notch fa-spin text-4xl text-blue-500"></i>
-                <p class="text-gray-400 mt-3 text-sm">جاري جلب البيانات...</p>
-            </div>
-        </div>
-        
-        <!-- Footer -->
-        <div class="text-center text-gray-600 text-xs mt-8">
-            تم الإنشاء لتجميع البيانات بشكل سريع © 2024
-        </div>
+            <div id="form-message" class="text-center text-sm font-medium mt-4 hidden rounded-lg py-2"></div>
+        </form>
     </div>
 
     <script src="app.js"></script>
