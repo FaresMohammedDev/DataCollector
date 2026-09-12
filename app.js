@@ -76,6 +76,18 @@ btnBackForm.addEventListener('click', () => {
     formSection.classList.remove('hidden');
 });
 
+// فتح القائمة للتجربة (عن طريق الزر المضاف)
+const btnTestList = document.getElementById('btn-test-list');
+if (btnTestList) {
+    btnTestList.addEventListener('click', () => {
+        studentForm.reset();
+        formMessage.classList.add('hidden');
+        formSection.classList.add('hidden');
+        listSection.classList.remove('hidden');
+        loadStudents();
+    });
+}
+
 function showMessage(text, colorClasses) {
     formMessage.textContent = text;
     formMessage.className = `text-center text-sm font-bold mt-4 p-3 rounded-lg ${colorClasses}`;
