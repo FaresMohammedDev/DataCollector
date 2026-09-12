@@ -76,18 +76,6 @@ btnBackForm.addEventListener('click', () => {
     formSection.classList.remove('hidden');
 });
 
-// فتح القائمة للتجربة (عن طريق الزر المضاف)
-const btnTestList = document.getElementById('btn-test-list');
-if (btnTestList) {
-    btnTestList.addEventListener('click', () => {
-        studentForm.reset();
-        formMessage.classList.add('hidden');
-        formSection.classList.add('hidden');
-        listSection.classList.remove('hidden');
-        loadStudents();
-    });
-}
-
 function showMessage(text, colorClasses) {
     formMessage.textContent = text;
     formMessage.className = `text-center text-sm font-bold mt-4 p-3 rounded-lg ${colorClasses}`;
@@ -145,11 +133,11 @@ function renderStudents(studentsToRender) {
     tableBody.innerHTML = '';
 
     if (studentsToRender.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-gray-500 font-medium">لا توجد بيانات مطابقة</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-gray-500 font-medium">لا توجد بيانات مطابقة</td></tr>';
         return;
     }
 
-    studentsToRender.forEach(student => {
+    studentsToRender.forEach((student, index) => {
         const row = document.createElement('tr');
         row.className = 'hover:bg-[#1e293b] transition duration-150';
         
@@ -164,6 +152,7 @@ function renderStudents(studentsToRender) {
             : 'bg-green-600 text-white hover:bg-green-500';
 
         row.innerHTML = `
+            <td class="p-4 text-gray-500 text-center font-bold">${index + 1}</td>
             <td class="p-4 ${textStyle}">${student.name}</td>
             <td class="p-4 text-gray-400" dir="ltr"><span class="${student.is_checked ? 'text-gray-600' : ''}">${student.whatsapp}</span></td>
             <td class="p-4 text-gray-400 text-sm whitespace-nowrap">${date}</td>
@@ -175,6 +164,9 @@ function renderStudents(studentsToRender) {
                     <a href="https://wa.me/${cleanNumber}" target="_blank" rel="noopener noreferrer" class="bg-blue-600 hover:bg-blue-500 text-white w-10 h-10 rounded-lg flex items-center justify-center transition shadow-md" title="مراسلة واتساب">
                         <i class="fab fa-whatsapp text-xl"></i>
                     </a>
+                    <button onclick="deleteStudent(${student.id})" class="bg-red-900 bg-opacity-40 text-red-400 hover:bg-red-600 hover:text-white border border-red-900 w-10 h-10 rounded-lg flex items-center justify-center transition shadow-sm" title="حذف الطالب">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
                 </div>
             </td>
         `;
@@ -202,6 +194,29 @@ window.toggleCheck = async (id, currentState) => {
     } catch (error) {
         console.error('Error updating status:', error);
         alert('حدث خطأ أثناء تحديث حالة الطالب');
+    } finally {
+        loadingSpinner.classList.add('hidden');
+    }
+};
+
+window.deleteStudent = async (id) => {
+    if (!confirm('هل أنت متأكد من حذف بيانات هذا الطالب نهائياً؟')) return;
+    
+    loadingSpinner.classList.remove('hidden');
+    try {
+        const { error } = await db
+            .from('students')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+        
+        allStudents = allStudents.filter(s => s.id !== id);
+        applyFilters();
+
+    } catch (error) {
+        console.error('Error deleting student:', error);
+        alert('حدث خطأ أثناء الحذف. يرجى التأكد من صلاحيات قاعدة البيانات (RLS).');
     } finally {
         loadingSpinner.classList.add('hidden');
     }
