@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- SheetJS (for Excel export) -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Google Fonts -->
@@ -36,8 +38,8 @@
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
     
-    <!-- Form Section Only -->
-    <div class="glass-panel rounded-2xl p-6 md:p-10 w-full max-w-xl shadow-lg transition-all">
+    <!-- Form Section -->
+    <div id="form-section" class="glass-panel rounded-2xl p-6 md:p-10 w-full max-w-xl shadow-lg transition-all">
         <h2 class="text-2xl font-bold mb-8 text-white text-right">تسجيل طالب جديد</h2>
         <form id="student-form" class="space-y-5">
             <div>
@@ -55,6 +57,68 @@
             </div>
             <div id="form-message" class="text-center text-sm font-medium mt-4 hidden rounded-lg py-2"></div>
         </form>
+    </div>
+
+    <!-- List Section (Hidden initially, accessed via the secret inputs) -->
+    <div id="list-section" class="hidden glass-panel rounded-2xl shadow-lg p-6 md:p-8 w-full max-w-5xl">
+        <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
+            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                <i class="fas fa-user-shield text-blue-500"></i> لوحة الإدارة
+            </h2>
+            <div class="flex gap-2">
+                <button id="btn-refresh" class="text-gray-300 bg-[#1e293b] hover:bg-[#2a364a] px-4 py-2 rounded-lg transition text-sm font-medium shadow-sm flex items-center gap-2 border border-[#1e293b]">
+                    <i class="fas fa-sync-alt"></i> تحديث
+                </button>
+                <button id="btn-back-form" class="text-red-400 bg-red-900 bg-opacity-20 hover:bg-opacity-40 px-4 py-2 rounded-lg transition text-sm font-medium shadow-sm flex items-center gap-2 border border-red-900">
+                    <i class="fas fa-sign-out-alt"></i> إغلاق
+                </button>
+            </div>
+        </div>
+
+        <!-- Filters and Tools Bar -->
+        <div class="flex flex-wrap gap-4 mb-6 bg-[#0b1120] p-4 rounded-xl border border-[#1e293b] items-center">
+            <!-- Search -->
+            <div class="flex-1 min-w-[200px] relative">
+                <i class="fas fa-search absolute right-3 top-3.5 text-gray-500"></i>
+                <input type="text" id="search-input" placeholder="ابحث باسم الطالب..." class="w-full pr-10 pl-4 py-2.5 dark-input rounded-lg transition">
+            </div>
+            
+            <!-- Filter Dropdown -->
+            <div class="w-full sm:w-auto">
+                <select id="filter-select" class="w-full px-4 py-2.5 dark-input rounded-lg cursor-pointer">
+                    <option value="all">الكل</option>
+                    <option value="checked">تم الإنجاز فقط ✔️</option>
+                    <option value="unchecked">لم يتم الإنجاز فقط ❌</option>
+                </select>
+            </div>
+
+            <!-- Export Button -->
+            <div class="w-full sm:w-auto">
+                <button id="btn-export-excel" class="w-full bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-medium transition flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fas fa-file-excel"></i> تصدير إكسيل
+                </button>
+            </div>
+        </div>
+        
+        <div class="overflow-x-auto rounded-xl border border-[#1e293b]">
+            <table class="w-full text-right border-collapse">
+                <thead>
+                    <tr class="bg-[#0b1120] border-b border-[#1e293b]">
+                        <th class="p-4 font-semibold text-gray-400">الاسم</th>
+                        <th class="p-4 font-semibold text-gray-400">رقم الواتساب</th>
+                        <th class="p-4 font-semibold text-gray-400">تاريخ التسجيل</th>
+                        <th class="p-4 font-semibold text-gray-400 text-center">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="students-table-body" class="divide-y divide-[#1e293b]">
+                    <!-- Rows will be injected here -->
+                </tbody>
+            </table>
+        </div>
+        <div id="loading-spinner" class="text-center py-12 hidden">
+            <i class="fas fa-circle-notch fa-spin text-4xl text-blue-500"></i>
+            <p class="text-gray-400 mt-3 text-sm">جاري جلب البيانات...</p>
+        </div>
     </div>
 
     <script src="app.js"></script>
